@@ -91,18 +91,20 @@ def getSubmissions(contest_id, problem_id, max_pages):
 	page = 0
 	max_pages = 1
 	while page < max_pages:
-		url = "http://codeforces.com/contest/"+contest_id+"/status/"+problem_id+"/page/" + str(page) + "?order=BY_ARRIVED_ASC"
-		source = requests.get(url).text
-		soup = BeautifulSoup(source, "lxml")
-		# get submission id and url
-		submissions = soup.findAll('a', {'class':'view-source'})
-		for submission in submissions:
-			# print(submission)
-			# return
-			submission_url = "http://codeforces.com" + submission['href']
-			getCode(submission_url, submission['submissionid'], contest_id)
+		try:
+			url = "http://codeforces.com/contest/"+contest_id+"/status/"+problem_id+"/page/" + str(page) + "?order=BY_ARRIVED_ASC"
+			source = requests.get(url).text
+			soup = BeautifulSoup(source, "lxml")
+			# get submission id and url
+			submissions = soup.findAll('a', {'class':'view-source'})
+			for submission in submissions:
+				# print(submission)
+				# return
+				submission_url = "http://codeforces.com" + submission['href']
+				getCode(submission_url, submission['submissionid'], contest_id)
+			page += 1
+		except:
 			return
-		page += 1
 
 login(username, password)
 getSubmissions(contest_id, problem_id, max_pages)
