@@ -8,22 +8,21 @@ import os
 import time
 
 max_pages = 100
-# username = input("Enter your handle/email = ")
-# password = input("Enter password = ")
+username = input("Enter your handle/email = ")
+password = input("Enter password = ")
 # contest_id = input("Enter contest id = ")
 # problem_id = input("Enter problem id = ")
 contest_id = "903"
 problem_id = "A"
 
 replace = {'&quot;': '\"', '&gt;': '>', '&lt;': '<', '&amp;': '&', "&apos;": "'"}
-extension = {'GNU C++14':'cpp', 'GNU C++11':'cpp', 'GNU C++17':'cpp', 'Java 8':'java', 'Python 3': 'py', 'Python 2':'py'}
 languages = {'GNU C++14':'GNU G++14 6.4.0', 'GNU C++11':'GNU G++11 5.1.0', 'GNU C++17':'GNU G++17 7.3.0', 'Java 8':'Java 11.0.5', 'Python 3': 'Python 3.7.2', 'Python 2':'Python 2.7.15'}
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver",chrome_options=options)
 with open('input.txt', 'r') as myfile: 
 	test_input = myfile.read()
 with open('output.txt', 'r') as myfile: 
-	test_output = myfile.read().split('\n')
+	test_output = myfile.read()
 def login(username, password):
 	driver.get('https://www.codeforces.com/enter')
 	# enter username
@@ -49,9 +48,6 @@ def runCode(language, contest_id, code):
 	select = Select(driver.find_element_by_name('programTypeId'))
 	select.select_by_visible_text(languages[language])
 	# enter code in editor
-	# checkbox = driver.find_element_by_id('toggleEditorCheckbox')
-	# checkbox.click()
-	# driver.implicitly_wait(10)
 	text_box = driver.find_elements_by_class_name("ace_text-input")[0]
 	text_box.send_keys(code)
 	driver.implicitly_wait(100)
@@ -63,22 +59,24 @@ def runCode(language, contest_id, code):
 	text_box = driver.find_elements_by_name("input")[0]
 	text_box.send_keys(test_input)
 	driver.implicitly_wait(10)
-	time.sleep(5)
 	submit_button = driver.find_elements_by_name("submit")[0]
 	submit_button.submit()
 	# wait for code to run
+	driver.implicitly_wait(10)
+	time.sleep(10)
 	text_box = driver.find_element_by_name('output')
 	output = text_box.get_attribute('value')
-	print(output)
-
-
+	for i in range(len(test_output)):
+		if test_output[i] != output[i]:
+			hack()
+	
 #fetches the code corresponding to the parameter url
 def getCode(submission_url, contest_id):
 	source = requests.get(submission_url).text
 	soup = BeautifulSoup(source, "lxml")
 	# find language
 	language = soup.findAll('td')[3].text[6:-6]
-	if language not in extension.keys():
+	if language not in languages.keys():
 		return
 	code = soup.findAll('pre')[0].text
 	code = parse(code).replace('\r', '')
