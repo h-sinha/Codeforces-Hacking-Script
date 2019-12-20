@@ -6,23 +6,25 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.support.ui import Select
 import os
 import time
+# from hack import Hack
 
 max_pages = 100
 username = input("Enter your handle/email = ")
 password = input("Enter password = ")
-# contest_id = input("Enter contest id = ")
-# problem_id = input("Enter problem id = ")
-contest_id = "903"
-problem_id = "A"
+contest_id = input("Enter contest id = ")
+problem_id = input("Enter problem id = ")
 
 replace = {'&quot;': '\"', '&gt;': '>', '&lt;': '<', '&amp;': '&', "&apos;": "'"}
 languages = {'GNU C++14':'GNU G++14 6.4.0', 'GNU C++11':'GNU G++11 5.1.0', 'GNU C++17':'GNU G++17 7.3.0', 'Java 8':'Java 11.0.5', 'Python 3': 'Python 3.7.2', 'Python 2':'Python 2.7.15'}
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver",chrome_options=options)
+
+# load input and output
 with open('input.txt', 'r') as myfile: 
 	test_input = myfile.read()
 with open('output.txt', 'r') as myfile: 
 	test_output = myfile.read()
+
 def login(username, password):
 	driver.get('https://www.codeforces.com/enter')
 	# enter username
@@ -42,7 +44,7 @@ def parse(code):
 		code = code.replace(key, replace[key])
 	return code
 
-def runCode(language, contest_id, code):
+def runCode(language, submission_id, contest_id, code):
 	driver.get('https://codeforces.com/contest/'+contest_id+'/customtest')
 	# select language
 	select = Select(driver.find_element_by_name('programTypeId'))
@@ -67,11 +69,13 @@ def runCode(language, contest_id, code):
 	text_box = driver.find_element_by_name('output')
 	output = text_box.get_attribute('value')
 	for i in range(len(test_output)):
+		# outputs don't match so hack!!
 		if test_output[i] != output[i]:
-			hack()
-	
+			Hack(contest_id, submission_id)
+			return
+
 #fetches the code corresponding to the parameter url
-def getCode(submission_url, contest_id):
+def getCode(submission_url, submission_id, contest_id):
 	source = requests.get(submission_url).text
 	soup = BeautifulSoup(source, "lxml")
 	# find language
@@ -80,7 +84,7 @@ def getCode(submission_url, contest_id):
 		return
 	code = soup.findAll('pre')[0].text
 	code = parse(code).replace('\r', '')
-	runCode(language, contest_id, code)
+	runCode(language, submission_id, contest_id, code)
 
 #gets all accepted submission for a problem and calls helper functions
 def getSubmissions(contest_id, problem_id, max_pages):
@@ -93,9 +97,12 @@ def getSubmissions(contest_id, problem_id, max_pages):
 		# get submission id and url
 		submissions = soup.findAll('a', {'class':'view-source'})
 		for submission in submissions:
+			# print(submission)
+			# return
 			submission_url = "http://codeforces.com" + submission['href']
-			getCode(submission_url, contest_id)
+			getCode(submission_url, submission['submissionid'], contest_id)
 			return
 		page += 1
+
 login(username, password)
 getSubmissions(contest_id, problem_id, max_pages)
