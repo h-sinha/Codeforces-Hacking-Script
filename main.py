@@ -5,10 +5,11 @@ import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.support.ui import Select
 import os
+import time
 
 max_pages = 100
-username = input("Enter your handle/email = ")
-password = input("Enter password = ")
+# username = input("Enter your handle/email = ")
+# password = input("Enter password = ")
 # contest_id = input("Enter contest id = ")
 # problem_id = input("Enter problem id = ")
 contest_id = "903"
@@ -19,7 +20,10 @@ extension = {'GNU C++14':'cpp', 'GNU C++11':'cpp', 'GNU C++17':'cpp', 'Java 8':'
 languages = {'GNU C++14':'GNU G++14 6.4.0', 'GNU C++11':'GNU G++11 5.1.0', 'GNU C++17':'GNU G++17 7.3.0', 'Java 8':'Java 11.0.5', 'Python 3': 'Python 3.7.2', 'Python 2':'Python 2.7.15'}
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver",chrome_options=options)
-
+with open('input.txt', 'r') as myfile: 
+	test_input = myfile.read()
+with open('output.txt', 'r') as myfile: 
+	test_output = myfile.read().split('\n')
 def login(username, password):
 	driver.get('https://www.codeforces.com/enter')
 	# enter username
@@ -39,16 +43,37 @@ def parse(code):
 		code = code.replace(key, replace[key])
 	return code
 
-def runCode(language):
-	driver.get('https://codeforces.com/problemset/customtest')
-	driver.find_element_by_name("inputFile").send_keys(os.path.join(os.getcwd(),'./code.'+extension[language]))
+def runCode(language, contest_id, code):
+	driver.get('https://codeforces.com/contest/'+contest_id+'/customtest')
+	# select language
 	select = Select(driver.find_element_by_name('programTypeId'))
 	select.select_by_visible_text(languages[language])
+	# enter code in editor
+	# checkbox = driver.find_element_by_id('toggleEditorCheckbox')
+	# checkbox.click()
+	# driver.implicitly_wait(10)
+	text_box = driver.find_elements_by_class_name("ace_text-input")[0]
+	text_box.send_keys(code)
+	driver.implicitly_wait(100)
+	# removing braces due to autocompletion in online ide
+	for _ in range(1000):
+		text_box.send_keys(Keys.DELETE);
+	driver.implicitly_wait(100)
+	# input test case
 	text_box = driver.find_elements_by_name("input")[0]
-	text_box.send_keys("sa")
+	text_box.send_keys(test_input)
+	driver.implicitly_wait(10)
+	time.sleep(5)
+	submit_button = driver.find_elements_by_name("submit")[0]
+	submit_button.submit()
+	# wait for code to run
+	text_box = driver.find_element_by_name('output')
+	output = text_box.get_attribute('value')
+	print(output)
+
 
 #fetches the code corresponding to the parameter url
-def getCode(submission_url):
+def getCode(submission_url, contest_id):
 	source = requests.get(submission_url).text
 	soup = BeautifulSoup(source, "lxml")
 	# find language
@@ -57,10 +82,7 @@ def getCode(submission_url):
 		return
 	code = soup.findAll('pre')[0].text
 	code = parse(code).replace('\r', '')
-	with open('code.' + extension[language], 'w+') as f:
-		f.write(code)
-	f.close()
-	runCode(language)
+	runCode(language, contest_id, code)
 
 #gets all accepted submission for a problem and calls helper functions
 def getSubmissions(contest_id, problem_id, max_pages):
@@ -74,7 +96,7 @@ def getSubmissions(contest_id, problem_id, max_pages):
 		submissions = soup.findAll('a', {'class':'view-source'})
 		for submission in submissions:
 			submission_url = "http://codeforces.com" + submission['href']
-			getCode(submission_url)
+			getCode(submission_url, contest_id)
 			return
 		page += 1
 login(username, password)
