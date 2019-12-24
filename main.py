@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.support.ui import Select
 import os
 import time
-# from hack import Hack
+from hack import Hack
 
 max_pages = 100
 username = input("Enter your handle/email = ")
