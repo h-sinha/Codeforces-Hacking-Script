@@ -1,3 +1,4 @@
+# parameters expected output, actual output
 def Checker(test_output, output):
 	print(test_output, output)
 	for i in range(len(test_output)):
