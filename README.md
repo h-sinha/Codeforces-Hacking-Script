@@ -1,5 +1,5 @@
 # Codeforces Hacking Script
-Automates the process of hacking solutions in codeforces Educational rounds.
+Automates the process of hacking solutions in Codeforces Educational rounds.
 # Requirements 
 Refer to [requirements.txt](../master/requirements.txt)
 # How to use?
