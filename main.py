@@ -67,7 +67,7 @@ def runCode(language, submission_id, contest_id, code):
 	text_box.send_keys(code)
 	driver.implicitly_wait(100)
 	# removing extra characters due to autocompletion in online ide
-	for _ in range(2000):
+	for _ in range(2500):
 		text_box.send_keys(Keys.DELETE);
 	# input test case
 	text_box = driver.find_elements_by_name("input")[0]

@@ -25,3 +25,6 @@ Enter problem id = C
 * Runs each code on the given test case using Codeforces' custom invocation.
 * Compares the expected output and output given by the code.
 * If the outputs don't match, the script hacks the solution.
+
+# Note
+* The script runs in background. If you wish to see how it actually works, comment line no. 20 in main.py.
